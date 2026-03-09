@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-devops
+  labels:
+    app: flask-devops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-devops
+  template:
+    metadata:
+      labels:
+        app: flask-devops
+    spec:
+      containers:
+      - name: flask-devops
+        image: TON_DOCKERHUB_USERNAME/flask-devops:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: APP_VERSION
+          value: '1.0.0'
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: '64Mi'
+            cpu: '100m'
+          limits:
+            memory: '128Mi'
+            cpu: '200m'
