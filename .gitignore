@@ -1,0 +1,9 @@
+# Terraform - fichiers sensibles
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+
+# OCI credentials
+*.pem
+.oci/
