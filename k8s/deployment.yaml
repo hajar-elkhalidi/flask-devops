@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: flask-devops
-        image: TON_DOCKERHUB_USERNAME/flask-devops:latest
+        image: hajare/flask-devops:latest
         ports:
         - containerPort: 5000
         env:
