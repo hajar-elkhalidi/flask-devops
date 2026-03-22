@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DevOps Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #1a56db, #06b6d4);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .logo-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .logo-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #0f2d1a;
+      border: 1px solid #166534;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .status-banner.loading {
+      background: #1c1f2e;
+      border-color: #334155;
+      color: #64748b;
+    }
+
+    .status-banner.error {
+      background: #2d0f0f;
+      border-color: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    .dot.loading { background: #475569; animation: none; }
+    .dot.error   { background: #ef4444; animation: none; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .fields { display: flex; flex-direction: column; gap: 1rem; }
+
+    .field {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .field-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .badge.running {
+      background: #052e16;
+      color: #4ade80;
+      border: 1px solid #166534;
+    }
+
+    .badge.version {
+      background: #0c1a3a;
+      color: #60a5fa;
+      border: 1px solid #1d4ed8;
+    }
+
+    .refresh-btn {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.75rem;
+      background: #1a56db;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .refresh-btn:hover { background: #1d4ed8; }
+    .refresh-btn:active { transform: scale(0.98); }
+
+    .health-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .health-card {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      text-align: center;
+    }
+
+    .health-card .label {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.4rem;
+    }
+
+    .health-card .value {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .health-card .value.healthy { color: #4ade80; }
+    .health-card .value.unknown { color: #94a3b8; }
+    .health-card .value.error   { color: #f87171; }
+
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      color: #334155;
+      text-align: center;
+    }
+
+    .url {
+      font-size: 0.72rem;
+      color: #475569;
+      font-family: monospace;
+      margin-top: 0.3rem;
+    }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid #334155;
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🚀</div>
+    <div>
+      <div class="logo-text">DevOps Dashboard</div>
+      <div class="logo-sub">Master Excellence IA - Cloud Computing &amp; DevOps</div>
+    </div>
+  </div>
+
+  <div class="status-banner loading" id="banner">
+    <div class="dot loading" id="dot"></div>
+    <span id="banner-text">Connexion à l'API...</span>
+  </div>
+
+  <div class="fields">
+    <div class="field">
+      <span class="field-label">Message</span>
+      <span class="field-value" id="f-message">—</span>
+    </div>
+    <div class="field">
+      <span class="field-label">Statut</span>
+      <span class="badge running" id="f-status">—</span>
+    </div>
+    <div class="field">
+      <span class="field-label">Version</span>
+      <span class="badge version" id="f-version">—</span>
+    </div>
+  </div>
+
+  <div class="health-row">
+    <div class="health-card">
+      <div class="label">Health Check</div>
+      <div class="value unknown" id="h-status">—</div>
+    </div>
+    <div class="health-card">
+      <div class="label">Dernière mise à jour</div>
+      <div class="value" id="h-time" style="color:#94a3b8;font-size:0.8rem">—</div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" onclick="fetchAll()">
+    <span>↻</span> Rafraîchir
+  </button>
+
+  <div class="footer">
+    API hébergée sur Oracle Cloud Free Tier · af-casablanca-1
+    <div class="url" id="api-url"></div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = "http://84.8.223.153:30000";
+
+  async function fetchMain() {
+    const res = await fetch(API_BASE + "/");
+    return res.json();
+  }
+
+  async function fetchHealth() {
+    const res = await fetch(API_BASE + "/health");
+    return res.json();
+  }
+
+  function setBanner(state, text) {
+    const banner = document.getElementById("banner");
+    const dot    = document.getElementById("dot");
+    banner.className = "status-banner " + state;
+    dot.className    = "dot " + state;
+    document.getElementById("banner-text").textContent = text;
+  }
+
+  async function fetchAll() {
+    setBanner("loading", "Connexion à l'API...");
+    document.getElementById("api-url").textContent = API_BASE;
+
+    try {
+      const [main, health] = await Promise.all([fetchMain(), fetchHealth()]);
+
+      document.getElementById("f-message").textContent = main.message || "—";
+      document.getElementById("f-status").textContent  = "● " + (main.status || "—");
+      document.getElementById("f-version").textContent = "v" + (main.version || "—");
+
+      const hEl = document.getElementById("h-status");
+      if (health.status === "healthy") {
+        hEl.textContent  = "✓ healthy";
+        hEl.className    = "value healthy";
+      } else {
+        hEl.textContent  = "✘ " + health.status;
+        hEl.className    = "value error";
+      }
+
+      document.getElementById("h-time").textContent =
+        new Date().toLocaleTimeString("fr-FR");
+
+      setBanner("", "API opérationnelle · Connexion établie");
+      document.querySelector(".dot").style.background = "#22c55e";
+      document.querySelector(".dot").style.animation  = "pulse 2s infinite";
+
+    } catch (e) {
+      setBanner("error", "Impossible de joindre l'API — " + e.message);
+      document.getElementById("h-status").textContent = "✘ unreachable";
+      document.getElementById("h-status").className   = "value error";
+    }
+  }
+
+  fetchAll();
+  setInterval(fetchAll, 30000); // rafraîchit toutes les 30s
+</script>
+
+</body>
+</html>

@@ -1,7 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 import os
 
 app = Flask(__name__)
+
+@app.route('/ui')
+def ui():
+    return send_from_directory('static', 'index.html')
 
 @app.route('/')
 def home():
